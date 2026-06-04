@@ -1,6 +1,8 @@
 package com.stockhub.infrastructure.config;
 
+import com.stockhub.infrastructure.security.JwtAuthEntryPoint;
 import com.stockhub.infrastructure.security.JwtAuthFilter;
+import com.stockhub.infrastructure.security.RestAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +34,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
     private final UserDetailsService userDetailsService;
 
     @Value("${cors.allowed-origins}")
@@ -67,6 +71,10 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/empresas", "/api/empresas/**").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jwtAuthEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
             )
             .authenticationProvider(authProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

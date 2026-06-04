@@ -25,13 +25,16 @@ class EmpresaCrudIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void create_withoutAuth_returns403() throws Exception {
+    void create_withoutAuth_returns401_withErrorResponseShape() throws Exception {
         mockMvc.perform(post("/api/empresas")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"nit":"700100100-9","nombre":"X","direccion":"y","telefono":"z"}
                                 """))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
